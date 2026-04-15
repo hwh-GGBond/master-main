@@ -48,6 +48,14 @@ public class Document {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "document_tags",
+        joinColumns = @JoinColumn(name = "document_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags;
+    
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
