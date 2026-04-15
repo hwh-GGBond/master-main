@@ -1,8 +1,8 @@
 package com.docplatform.master.controller;
+
 import com.docplatform.master.entity.User;
 import com.docplatform.master.service.UserService;
 import com.docplatform.master.util.JwtUtil;
-import com.docplatform.master.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,9 +10,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -33,12 +35,9 @@ public class AuthController {
         try {
             User registeredUser = userService.register(user);
             String token = jwtUtil.generateToken(registeredUser.getUsername());
-            Map<String, String> response = new HashMap<>();
-            response.put("accessToken", token);
-            response.put("username", registeredUser.getUsername());
-            return ResponseUtil.success(response, HttpStatus.CREATED);
+            return new ResponseEntity<>(Map.of("accessToken", token, "username", registeredUser.getUsername()), HttpStatus.CREATED);
         } catch (RuntimeException e) {
-            return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
     
@@ -53,15 +52,12 @@ public class AuthController {
             );
             
             String token = jwtUtil.generateToken(username);
-            Map<String, String> response = new HashMap<>();
-            response.put("accessToken", token);
-            response.put("username", username);
-            return ResponseUtil.success(response);
+            return new ResponseEntity<>(Map.of("accessToken", token, "username", username), HttpStatus.OK);
         } catch (AuthenticationException e) {
-            return ResponseUtil.error("Bad credentials", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("error", "Bad credentials"), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseUtil.error("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("error", "Internal server error"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     
