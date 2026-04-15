@@ -59,8 +59,6 @@ public class SecurityConfig {
                     .policyDirectives("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:")
                 )
                 .frameOptions(frame -> frame.deny())
-                .xssProtection(xss -> xss.enabled(true))
-                .contentTypeOptions(contentType -> contentType.enabled(true))
             )
             .addFilter(new JwtAuthenticationFilter(authenticationManager, jwtUtil))
             .addFilterBefore(new JwtAuthorizationFilter(authenticationManager, jwtUtil), UsernamePasswordAuthenticationFilter.class);
