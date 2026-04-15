@@ -1,10 +1,8 @@
 package com.docplatform.master.controller;
 
 import com.docplatform.master.entity.Document;
-import com.docplatform.master.entity.Tag;
 import com.docplatform.master.entity.User;
 import com.docplatform.master.service.DocumentService;
-import com.docplatform.master.service.TagService;
 import com.docplatform.master.service.UserService;
 import com.docplatform.master.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +28,6 @@ public class DocumentController {
     
     @Autowired
     private DocumentService documentService;
-    
-    @Autowired
-    private TagService tagService;
     
     @Autowired
     private UserService userService;
@@ -126,78 +121,6 @@ public class DocumentController {
             String mdContent = request.get("mdContent");
             Document document = documentService.updateDocument(id, title, mdContent, user);
             return ResponseUtil.success(document);
-        } catch (RuntimeException e) {
-            return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
-    
-    @PostMapping("/{id}/tags")
-    public ResponseEntity<?> addTagToDocument(@PathVariable Long id, @RequestBody Map<String, String> request, Authentication authentication) {
-        try {
-            User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
-            String tagName = request.get("tagName");
-            if (tagName == null || tagName.isEmpty()) {
-                return ResponseUtil.error("Tag name is required", HttpStatus.BAD_REQUEST);
-            }
-            Document document = documentService.addTagToDocument(id, tagName, user);
-            return ResponseUtil.success(document);
-        } catch (RuntimeException e) {
-            return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
-    
-    @DeleteMapping("/{id}/tags/{tagId}")
-    public ResponseEntity<?> removeTagFromDocument(@PathVariable Long id, @PathVariable Long tagId, Authentication authentication) {
-        try {
-            User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
-            Document document = documentService.removeTagFromDocument(id, tagId, user);
-            return ResponseUtil.success(document);
-        } catch (RuntimeException e) {
-            return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
-    
-    @GetMapping("/search")
-    public ResponseEntity<?> searchDocuments(@RequestParam String tag, Authentication authentication) {
-        try {
-            User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
-            List<Document> documents = documentService.searchDocumentsByTag(tag, user);
-            return ResponseUtil.success(documents);
-        } catch (RuntimeException e) {
-            return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
-}
-
-@RestController
-@RequestMapping("/api/tags")
-class TagController {
-    
-    @Autowired
-    private TagService tagService;
-    
-    @Autowired
-    private UserService userService;
-    
-    @GetMapping
-    public ResponseEntity<?> getTags(Authentication authentication) {
-        try {
-            User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
-            List<Tag> tags = tagService.getTagsByUser(user);
-            return ResponseUtil.success(tags);
-        } catch (RuntimeException e) {
-            return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
-    
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteTag(@PathVariable Long id, Authentication authentication) {
-        try {
-            User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
-            tagService.deleteTag(id, user);
-            Map<String, String> responseData = new HashMap<>();
-            responseData.put("message", "Tag deleted successfully");
-            return ResponseUtil.success(responseData);
         } catch (RuntimeException e) {
             return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
