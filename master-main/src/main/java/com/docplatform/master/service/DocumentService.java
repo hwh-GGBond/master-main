@@ -1,12 +1,18 @@
 package com.docplatform.master.service;
 
 import com.docplatform.master.entity.Document;
+import com.docplatform.master.entity.Tag;
 import com.docplatform.master.entity.User;
 import com.docplatform.master.repository.DocumentRepository;
+import com.docplatform.master.service.TagService;
 import com.docplatform.master.service.converter.ConverterFactory;
 import com.docplatform.master.service.converter.DocumentConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,8 +21,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class DocumentService {
@@ -24,10 +32,14 @@ public class DocumentService {
     @Autowired
     private DocumentRepository documentRepository;
     
+    @Autowired
+    private TagService tagService;
+    
     @Value("${file.upload-dir}")
     private String uploadDir;
     
-    public Document uploadDocument(MultipartFile file, User user) throws IOException {
+    @Async
+    public CompletableFuture<Document> uploadDocument(MultipartFile file, User user) throws IOException {
         // Create upload directory if it doesn't exist
         File uploadDirectory = new File(uploadDir);
         if (!uploadDirectory.exists()) {
@@ -53,9 +65,11 @@ public class DocumentService {
         document.setConverted(false);
         document.setUser(user);
         
-        return documentRepository.save(document);
+        Document savedDocument = documentRepository.save(document);
+        return CompletableFuture.completedFuture(savedDocument);
     }
     
+    @CachePut(value = "documents", key = "#id")
     public Document convertDocument(Long id, User user) throws IOException {
         Document document = getDocumentById(id, user);
         
@@ -81,10 +95,12 @@ public class DocumentService {
         return documentRepository.save(document);
     }
     
+    @Cacheable(value = "documents", key = "#user.id")
     public List<Document> getDocumentsByUser(User user) {
         return documentRepository.findByUser(user);
     }
     
+    @Cacheable(value = "documents", key = "#id")
     public Document getDocumentById(Long id, User user) {
         Document document = documentRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
         if (!document.getUser().getId().equals(user.getId())) {
@@ -93,6 +109,7 @@ public class DocumentService {
         return document;
     }
     
+    @CacheEvict(value = {"documents"}, key = "#id")
     public void deleteDocument(Long id, User user) {
         Document document = getDocumentById(id, user);
         
@@ -106,6 +123,7 @@ public class DocumentService {
         documentRepository.delete(document);
     }
     
+    @CachePut(value = "documents", key = "#id")
     public Document updateDocument(Long id, String title, String mdContent, User user) {
         Document document = getDocumentById(id, user);
         if (title != null) {
@@ -116,5 +134,26 @@ public class DocumentService {
             document.setConverted(true);
         }
         return documentRepository.save(document);
+    }
+    
+    @CachePut(value = "documents", key = "#documentId")
+    public Document addTagToDocument(Long documentId, String tagName, User user) {
+        Document document = getDocumentById(documentId, user);
+        Tag tag = tagService.createTag(tagName, user);
+        document.getTags().add(tag);
+        return documentRepository.save(document);
+    }
+    
+    @CachePut(value = "documents", key = "#documentId")
+    public Document removeTagFromDocument(Long documentId, Long tagId, User user) {
+        Document document = getDocumentById(documentId, user);
+        Tag tag = tagService.getTagById(tagId, user);
+        document.getTags().remove(tag);
+        return documentRepository.save(document);
+    }
+    
+    public List<Document> searchDocumentsByTag(String tagName, User user) {
+        Tag tag = tagService.getTagByName(tagName, user);
+        return new ArrayList<>(tag.getDocuments());
     }
 }
