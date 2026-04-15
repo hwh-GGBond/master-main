@@ -1,0 +1,120 @@
+package com.docplatform.master.service;
+
+import com.docplatform.master.entity.Document;
+import com.docplatform.master.entity.User;
+import com.docplatform.master.repository.DocumentRepository;
+import com.docplatform.master.service.converter.ConverterFactory;
+import com.docplatform.master.service.converter.DocumentConverter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class DocumentService {
+    
+    @Autowired
+    private DocumentRepository documentRepository;
+    
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+    
+    public Document uploadDocument(MultipartFile file, User user) throws IOException {
+        // Create upload directory if it doesn't exist
+        File uploadDirectory = new File(uploadDir);
+        if (!uploadDirectory.exists()) {
+            uploadDirectory.mkdirs();
+        }
+        
+        // Generate unique filename
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf('.')) : "";
+        String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
+        
+        // Save file to disk
+        Path filePath = Paths.get(uploadDir, uniqueFilename);
+        Files.write(filePath, file.getBytes());
+        
+        // Create document entity
+        Document document = new Document();
+        document.setTitle(originalFilename != null ? originalFilename.substring(0, originalFilename.lastIndexOf('.')) : "");
+        document.setOriginalName(originalFilename);
+        document.setFilePath(filePath.toString());
+        document.setFileSize(file.getSize());
+        document.setFileType(file.getContentType());
+        document.setConverted(false);
+        document.setUser(user);
+        
+        return documentRepository.save(document);
+    }
+    
+    public Document convertDocument(Long id, User user) throws IOException {
+        Document document = getDocumentById(id, user);
+        
+        // Check if document is already converted
+        if (document.isConverted()) {
+            return document;
+        }
+        
+        // Get appropriate converter
+        DocumentConverter converter = ConverterFactory.getConverter(document.getFileType());
+        if (converter == null) {
+            throw new RuntimeException("Unsupported file type for conversion");
+        }
+        
+        // Convert to markdown
+        File file = new File(document.getFilePath());
+        String markdownContent = converter.convertToMarkdown(file);
+        
+        // Update document
+        document.setMdContent(markdownContent);
+        document.setConverted(true);
+        
+        return documentRepository.save(document);
+    }
+    
+    public List<Document> getDocumentsByUser(User user) {
+        return documentRepository.findByUser(user);
+    }
+    
+    public Document getDocumentById(Long id, User user) {
+        Document document = documentRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+        if (!document.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Access denied");
+        }
+        return document;
+    }
+    
+    public void deleteDocument(Long id, User user) {
+        Document document = getDocumentById(id, user);
+        
+        // Delete file from disk
+        try {
+            Files.deleteIfExists(Paths.get(document.getFilePath()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        documentRepository.delete(document);
+    }
+    
+    public Document updateDocument(Long id, String title, String mdContent, User user) {
+        Document document = getDocumentById(id, user);
+        if (title != null) {
+            document.setTitle(title);
+        }
+        if (mdContent != null) {
+            document.setMdContent(mdContent);
+            document.setConverted(true);
+        }
+        return documentRepository.save(document);
+    }
+}
