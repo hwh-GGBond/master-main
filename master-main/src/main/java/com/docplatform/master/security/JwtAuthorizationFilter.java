@@ -31,44 +31,15 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         }
         
         String token = header.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(token);
         
-        try {
-            String username = jwtUtil.extractUsername(token);
-            
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                if (jwtUtil.validateToken(token, username)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        username, null, Collections.emptyList()
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                } else {
-                    // Token 过期或无效
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    java.util.Map<String, Object> responseBody = new java.util.HashMap<>();
-                    responseBody.put("error", "Token expired or invalid");
-                    responseBody.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-                    responseBody.put("timestamp", System.currentTimeMillis());
-                    responseBody.put("traceId", java.util.UUID.randomUUID().toString());
-                    response.getWriter().write(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(responseBody));
-                    response.getWriter().flush();
-                    response.getWriter().close();
-                    return;
-                }
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (jwtUtil.validateToken(token, username)) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    username, null, Collections.emptyList()
+                );
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
-        } catch (Exception e) {
-            // Token 格式错误或其他异常
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            java.util.Map<String, Object> responseBody = new java.util.HashMap<>();
-            responseBody.put("error", "Invalid token format");
-            responseBody.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-            responseBody.put("timestamp", System.currentTimeMillis());
-            responseBody.put("traceId", java.util.UUID.randomUUID().toString());
-            response.getWriter().write(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(responseBody));
-            response.getWriter().flush();
-            response.getWriter().close();
-            return;
         }
         
         chain.doFilter(request, response);
