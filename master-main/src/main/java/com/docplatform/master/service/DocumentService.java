@@ -1,10 +1,8 @@
 package com.docplatform.master.service;
 
 import com.docplatform.master.entity.Document;
-import com.docplatform.master.entity.Tag;
 import com.docplatform.master.entity.User;
 import com.docplatform.master.repository.DocumentRepository;
-import com.docplatform.master.service.TagService;
 import com.docplatform.master.service.converter.ConverterFactory;
 import com.docplatform.master.service.converter.DocumentConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -31,9 +28,6 @@ public class DocumentService {
     
     @Autowired
     private DocumentRepository documentRepository;
-    
-    @Autowired
-    private TagService tagService;
     
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -134,26 +128,5 @@ public class DocumentService {
             document.setConverted(true);
         }
         return documentRepository.save(document);
-    }
-    
-    @CachePut(value = "documents", key = "#documentId")
-    public Document addTagToDocument(Long documentId, String tagName, User user) {
-        Document document = getDocumentById(documentId, user);
-        Tag tag = tagService.createTag(tagName, user);
-        document.getTags().add(tag);
-        return documentRepository.save(document);
-    }
-    
-    @CachePut(value = "documents", key = "#documentId")
-    public Document removeTagFromDocument(Long documentId, Long tagId, User user) {
-        Document document = getDocumentById(documentId, user);
-        Tag tag = tagService.getTagById(tagId, user);
-        document.getTags().remove(tag);
-        return documentRepository.save(document);
-    }
-    
-    public List<Document> searchDocumentsByTag(String tagName, User user) {
-        Tag tag = tagService.getTagByName(tagName, user);
-        return new ArrayList<>(tag.getDocuments());
     }
 }
