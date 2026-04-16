@@ -1,5 +1,6 @@
 package com.docplatform.master.config;
 
+import com.docplatform.master.exception.InvalidPageParamsException;
 import com.docplatform.master.exception.PageOutOfRangeException;
 import com.docplatform.master.exception.UserNotFoundException;
 import com.docplatform.master.util.ResponseUtil;
@@ -28,6 +29,11 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(PageOutOfRangeException.class)
     public ResponseEntity<?> handlePageOutOfRangeException(PageOutOfRangeException ex) {
+        return ResponseUtil.error(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+    
+    @ExceptionHandler(InvalidPageParamsException.class)
+    public ResponseEntity<?> handleInvalidPageParamsException(InvalidPageParamsException ex) {
         return ResponseUtil.error(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
     
