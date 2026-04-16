@@ -1,6 +1,8 @@
 package com.docplatform.master.security;
 
 import com.docplatform.master.util.JwtUtil;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
