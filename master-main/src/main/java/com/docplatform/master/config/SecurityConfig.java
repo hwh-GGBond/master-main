@@ -2,6 +2,8 @@ package com.docplatform.master.config;
 
 import com.docplatform.master.security.JwtAuthenticationFilter;
 import com.docplatform.master.security.JwtAuthorizationFilter;
+import com.docplatform.master.security.CustomAccessDeniedHandler;
+import com.docplatform.master.security.CustomAuthenticationEntryPoint;
 import com.docplatform.master.service.UserDetailsServiceImpl;
 import com.docplatform.master.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +60,10 @@ public class SecurityConfig {
                     .policyDirectives("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:")
                 )
                 .frameOptions(frame -> frame.deny())
+            )
+            .exceptionHandling(exception -> exception
+                .accessDeniedHandler(new CustomAccessDeniedHandler())
+                .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
             )
             .addFilter(new JwtAuthenticationFilter(authenticationManager, jwtUtil))
             .addFilterBefore(new JwtAuthorizationFilter(authenticationManager, jwtUtil), UsernamePasswordAuthenticationFilter.class);
