@@ -2,6 +2,7 @@ package com.docplatform.master.controller;
 
 import com.docplatform.master.entity.Document;
 import com.docplatform.master.entity.User;
+import com.docplatform.master.exception.InvalidPageParamsException;
 import com.docplatform.master.exception.PageOutOfRangeException;
 import com.docplatform.master.exception.UserNotFoundException;
 import com.docplatform.master.service.DocumentService;
@@ -75,6 +76,8 @@ public class DocumentController {
         } catch (UserNotFoundException e) {
             return ResponseUtil.error(e.getMessage(), HttpStatus.UNAUTHORIZED);
         } catch (PageOutOfRangeException e) {
+            return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (InvalidPageParamsException e) {
             return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (RuntimeException e) {
             return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
