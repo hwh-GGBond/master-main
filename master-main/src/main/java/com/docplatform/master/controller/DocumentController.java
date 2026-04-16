@@ -33,20 +33,18 @@ public class DocumentController {
     private UserService userService;
     
     @PostMapping("/upload")
-    public CompletableFuture<ResponseEntity<?>> uploadDocument(@RequestParam("file") MultipartFile file, Authentication authentication) {
-        return CompletableFuture.supplyAsync(() -> {
+    public ResponseEntity<?> uploadDocument(@RequestParam("file") MultipartFile file, Authentication authentication) {
+        try {
+            User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
             try {
-                User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
-                try {
-                    Document document = documentService.uploadDocument(file, user).join();
-                    return ResponseUtil.success(document, HttpStatus.CREATED);
-                } catch (IOException e) {
-                    return ResponseUtil.error("Failed to upload document", HttpStatus.INTERNAL_SERVER_ERROR);
-                }
-            } catch (RuntimeException e) {
-                return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+                Document document = documentService.uploadDocument(file, user);
+                return ResponseUtil.success(document, HttpStatus.CREATED);
+            } catch (IOException e) {
+                return ResponseUtil.error("Failed to upload document", HttpStatus.INTERNAL_SERVER_ERROR);
             }
-        });
+        } catch (RuntimeException e) {
+            return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
     
     @PostMapping("/{id}/convert")
@@ -63,11 +61,11 @@ public class DocumentController {
     }
     
     @GetMapping
-    public ResponseEntity<?> getDocuments(Authentication authentication) {
+    public ResponseEntity<?> getDocuments(Authentication authentication, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         try {
             User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
-            List<Document> documents = documentService.getDocumentsByUser(user);
-            return ResponseUtil.success(documents);
+            Map<String, Object> result = documentService.getDocumentsByUser(user, page, size);
+            return ResponseUtil.success(result);
         } catch (RuntimeException e) {
             return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -78,7 +76,15 @@ public class DocumentController {
         try {
             User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
             Document document = documentService.getDocumentById(id, user);
+            
+            // 如果文档还没有转换为 Markdown，自动进行转换
+            if (!document.isConverted()) {
+                document = documentService.convertDocument(id, user);
+            }
+            
             return ResponseUtil.success(document);
+        } catch (IOException e) {
+            return ResponseUtil.error("Failed to convert document", HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (RuntimeException e) {
             return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
