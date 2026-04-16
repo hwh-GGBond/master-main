@@ -1,5 +1,7 @@
 package com.docplatform.master.config;
 
+import com.docplatform.master.exception.AccessDeniedException;
+import com.docplatform.master.exception.DocumentNotFoundException;
 import com.docplatform.master.util.ResponseUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         return ResponseUtil.error("Invalid JSON format: " + ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+    
+    @ExceptionHandler(DocumentNotFoundException.class)
+    public ResponseEntity<?> handleDocumentNotFoundException(DocumentNotFoundException ex) {
+        return ResponseUtil.error(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+    
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex) {
+        return ResponseUtil.error(ex.getMessage(), HttpStatus.FORBIDDEN);
     }
     
     @ExceptionHandler(RuntimeException.class)
