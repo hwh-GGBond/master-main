@@ -4,6 +4,7 @@ import com.docplatform.master.entity.Document;
 import com.docplatform.master.entity.User;
 import com.docplatform.master.exception.AccessDeniedException;
 import com.docplatform.master.exception.DocumentNotFoundException;
+import com.docplatform.master.exception.PageOutOfRangeException;
 import com.docplatform.master.repository.DocumentRepository;
 import com.docplatform.master.service.converter.ConverterFactory;
 import com.docplatform.master.service.converter.DocumentConverter;
@@ -155,6 +156,12 @@ public class DocumentService {
         int total = documents.size();
         // 计算总页数
         int totalPages = (int) Math.ceil((double) total / size);
+        
+        // 校验页码是否超出范围
+        if (page >= totalPages && total > 0) {
+            throw new PageOutOfRangeException("当前页码超出范围");
+        }
+        
         // 计算起始索引
         int startIndex = page * size;
         // 计算结束索引
