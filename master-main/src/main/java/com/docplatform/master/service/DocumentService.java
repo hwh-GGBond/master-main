@@ -2,6 +2,8 @@ package com.docplatform.master.service;
 
 import com.docplatform.master.entity.Document;
 import com.docplatform.master.entity.User;
+import com.docplatform.master.exception.AccessDeniedException;
+import com.docplatform.master.exception.DocumentNotFoundException;
 import com.docplatform.master.repository.DocumentRepository;
 import com.docplatform.master.service.converter.ConverterFactory;
 import com.docplatform.master.service.converter.DocumentConverter;
@@ -176,9 +178,9 @@ public class DocumentService {
     }
     
     public Document getDocumentById(Long id, User user) {
-        Document document = documentRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+        Document document = documentRepository.findById(id).orElseThrow(() -> new DocumentNotFoundException("Document not found"));
         if (!document.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Access denied");
+            throw new AccessDeniedException("Access denied");
         }
         return document;
     }
