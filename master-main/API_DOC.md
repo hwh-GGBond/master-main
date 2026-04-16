@@ -16,14 +16,17 @@
 **成功响应**：
 ```json
 {
-  "token": "string",
+  "accessToken": "string",
   "username": "string"
 }
 ```
 **失败响应**：
 ```json
 {
-  "error": "Username already exists"
+  "error": "Username already exists",
+  "status": 400,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
 }
 ```
 
@@ -41,14 +44,17 @@
 **成功响应**：
 ```json
 {
-  "token": "string",
+  "accessToken": "string",
   "username": "string"
 }
 ```
 **失败响应**：
 ```json
 {
-  "error": "Bad credentials"
+  "error": "Bad credentials",
+  "status": 400,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
 }
 ```
 
@@ -71,23 +77,34 @@ FormData: {
 **成功响应**：
 ```json
 {
-  "id": 1,
-  "title": "string",
-  "originalName": "string",
-  "filePath": "string",
-  "mdContent": null,
-  "fileSize": 1024,
-  "fileType": "application/pdf",
-  "converted": false,
-  "userId": 1,
-  "createdAt": "2026-04-13T17:00:00",
-  "updatedAt": "2026-04-13T17:00:00"
+  "data": {
+    "id": 1,
+    "title": "string",
+    "originalName": "string",
+    "filePath": "string",
+    "mdContent": null,
+    "fileSize": 1024,
+    "fileType": "application/pdf",
+    "converted": false,
+    "user": {
+      "id": 1,
+      "username": "string"
+    },
+    "createdAt": "2026-04-13T17:00:00",
+    "updatedAt": "2026-04-13T17:00:00"
+  },
+  "status": 201,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
 }
 ```
 **失败响应**：
 ```json
 {
-  "error": "Failed to upload document"
+  "error": "Failed to upload document",
+  "status": 500,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
 }
 ```
 
@@ -102,23 +119,34 @@ Authorization: Bearer {token}
 **成功响应**：
 ```json
 {
-  "id": 1,
-  "title": "string",
-  "originalName": "string",
-  "filePath": "string",
-  "mdContent": "# Document\n\nContent...",
-  "fileSize": 1024,
-  "fileType": "application/pdf",
-  "converted": true,
-  "userId": 1,
-  "createdAt": "2026-04-13T17:00:00",
-  "updatedAt": "2026-04-13T17:00:00"
+  "data": {
+    "id": 1,
+    "title": "string",
+    "originalName": "string",
+    "filePath": "string",
+    "mdContent": "# Document\n\nContent...",
+    "fileSize": 1024,
+    "fileType": "application/pdf",
+    "converted": true,
+    "user": {
+      "id": 1,
+      "username": "string"
+    },
+    "createdAt": "2026-04-13T17:00:00",
+    "updatedAt": "2026-04-13T17:00:00"
+  },
+  "status": 200,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
 }
 ```
 **失败响应**：
 ```json
 {
-  "error": "Unsupported file type for conversion"
+  "error": "Unsupported file type for conversion",
+  "status": 400,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
 }
 ```
 
@@ -132,26 +160,37 @@ Authorization: Bearer {token}
 ```
 **成功响应**：
 ```json
-[
-  {
-    "id": 1,
-    "title": "string",
-    "originalName": "string",
-    "filePath": "string",
-    "mdContent": "# Document\n\nContent...",
-    "fileSize": 1024,
-    "fileType": "application/pdf",
-    "converted": true,
-    "userId": 1,
-    "createdAt": "2026-04-13T17:00:00",
-    "updatedAt": "2026-04-13T17:00:00"
-  }
-]
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "string",
+      "originalName": "string",
+      "filePath": "string",
+      "mdContent": "# Document\n\nContent...",
+      "fileSize": 1024,
+      "fileType": "application/pdf",
+      "converted": true,
+      "user": {
+        "id": 1,
+        "username": "string"
+      },
+      "createdAt": "2026-04-13T17:00:00",
+      "updatedAt": "2026-04-13T17:00:00"
+    }
+  ],
+  "status": 200,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
+}
 ```
 **失败响应**：
 ```json
 {
-  "error": "User not found"
+  "error": "User not found",
+  "status": 400,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
 }
 ```
 
@@ -166,23 +205,34 @@ Authorization: Bearer {token}
 **成功响应**：
 ```json
 {
-  "id": 1,
-  "title": "string",
-  "originalName": "string",
-  "filePath": "string",
-  "mdContent": "# Document\n\nContent...",
-  "fileSize": 1024,
-  "fileType": "application/pdf",
-  "converted": true,
-  "userId": 1,
-  "createdAt": "2026-04-13T17:00:00",
-  "updatedAt": "2026-04-13T17:00:00"
+  "data": {
+    "id": 1,
+    "title": "string",
+    "originalName": "string",
+    "filePath": "string",
+    "mdContent": "# Document\n\nContent...",
+    "fileSize": 1024,
+    "fileType": "application/pdf",
+    "converted": true,
+    "user": {
+      "id": 1,
+      "username": "string"
+    },
+    "createdAt": "2026-04-13T17:00:00",
+    "updatedAt": "2026-04-13T17:00:00"
+  },
+  "status": 200,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
 }
 ```
 **失败响应**：
 ```json
 {
-  "error": "Document not found"
+  "error": "Document not found",
+  "status": 400,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
 }
 ```
 
@@ -209,12 +259,23 @@ Authorization: Bearer {token}
 Authorization: Bearer {token}
 ```
 **成功响应**：
-- HTTP 204 No Content
-
+```json
+{
+  "data": {
+    "message": "Document deleted successfully"
+  },
+  "status": 200,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
+}
+```
 **失败响应**：
 ```json
 {
-  "error": "Document not found"
+  "error": "Document not found",
+  "status": 400,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
 }
 ```
 
@@ -229,29 +290,41 @@ Authorization: Bearer {token}
 **请求体**：
 ```json
 {
-  "title": "string"
+  "title": "string",
+  "mdContent": "# Document\n\nNew content..."
 }
 ```
 **成功响应**：
 ```json
 {
-  "id": 1,
-  "title": "string",
-  "originalName": "string",
-  "filePath": "string",
-  "mdContent": "# Document\n\nContent...",
-  "fileSize": 1024,
-  "fileType": "application/pdf",
-  "converted": true,
-  "userId": 1,
-  "createdAt": "2026-04-13T17:00:00",
-  "updatedAt": "2026-04-13T17:00:00"
+  "data": {
+    "id": 1,
+    "title": "string",
+    "originalName": "string",
+    "filePath": "string",
+    "mdContent": "# Document\n\nNew content...",
+    "fileSize": 1024,
+    "fileType": "application/pdf",
+    "converted": true,
+    "user": {
+      "id": 1,
+      "username": "string"
+    },
+    "createdAt": "2026-04-13T17:00:00",
+    "updatedAt": "2026-04-13T17:00:00"
+  },
+  "status": 200,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
 }
 ```
 **失败响应**：
 ```json
 {
-  "error": "Document not found"
+  "error": "Document not found",
+  "status": 400,
+  "timestamp": 1713039600000,
+  "traceId": "uuid"
 }
 ```
 
@@ -261,7 +334,10 @@ Authorization: Bearer {token}
 
 ```json
 {
-  "error": "错误信息"
+  "error": "错误信息",
+  "status": 错误状态码,
+  "timestamp": 时间戳,
+  "traceId": "跟踪ID"
 }
 ```
 
