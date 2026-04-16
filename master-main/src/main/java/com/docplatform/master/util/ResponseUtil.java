@@ -15,7 +15,9 @@ public class ResponseUtil {
         response.put("status", status.value());
         response.put("timestamp", System.currentTimeMillis());
         response.put("traceId", UUID.randomUUID().toString());
-        return new ResponseEntity<>(response, status);
+        return ResponseEntity.status(status)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(response);
     }
 
     public static ResponseEntity<?> success(Object data, HttpStatus status) {
@@ -24,7 +26,9 @@ public class ResponseUtil {
         response.put("status", status.value());
         response.put("timestamp", System.currentTimeMillis());
         response.put("traceId", UUID.randomUUID().toString());
-        return new ResponseEntity<>(response, status);
+        return ResponseEntity.status(status)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(response);
     }
 
     public static ResponseEntity<?> success(Object data) {
