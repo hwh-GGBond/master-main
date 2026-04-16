@@ -10,6 +10,9 @@ public class ConverterFactory {
         converters.add(new PdfConverter());
         converters.add(new WordConverter());
         converters.add(new ExcelConverter());
+        converters.add(new PowerPointConverter());
+        converters.add(new CodeConverter());
+        converters.add(new ImageConverter());
     }
     
     public static DocumentConverter getConverter(String fileType) {
