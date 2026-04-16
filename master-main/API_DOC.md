@@ -107,50 +107,26 @@ FormData: {
   "traceId": "uuid"
 }
 ```
-
-### 2.2 转换文档（已废弃，保留用于兼容性）
-
-**请求方法**：POST
-**请求路径**：`/api/documents/{id}/convert`
-**请求头**：
-```
-Authorization: Bearer {token}
-```
-**成功响应**：
+或
 ```json
 {
-  "data": {
-    "id": 1,
-    "title": "string",
-    "originalName": "string",
-    "filePath": "string",
-    "mdContent": "# Document\n\nContent...",
-    "fileSize": 1024,
-    "fileType": "application/pdf",
-    "converted": true,
-    "user": {
-      "id": 1,
-      "username": "string"
-    },
-    "createdAt": "2026-04-13T17:00:00",
-    "updatedAt": "2026-04-13T17:00:00"
-  },
-  "status": 200,
+  "error": "Failed to upload document",
+  "status": 500,
   "timestamp": 1713039600000,
   "traceId": "uuid"
 }
 ```
-**失败响应**：
+或
 ```json
 {
-  "error": "Document not found",
-  "status": 404,
+  "error": "不支持的文件类型: application/unknown",
+  "status": 400,
   "timestamp": 1713039600000,
   "traceId": "uuid"
 }
 ```
 
-### 2.3 获取文档列表
+### 2.2 获取文档列表
 
 **请求方法**：GET
 **请求路径**：`/api/documents?page=0&size=10`
@@ -218,7 +194,7 @@ Authorization: Bearer {token}
 }
 ```
 
-### 2.4 获取文档详情
+### 2.3 获取文档详情
 
 **请求方法**：GET
 **请求路径**：`/api/documents/{id}`
@@ -262,8 +238,8 @@ Authorization: Bearer {token}
 或
 ```json
 {
-  "error": "Document not found",
-  "status": 404,
+  "error": "Failed to convert document",
+  "status": 500,
   "timestamp": 1713039600000,
   "traceId": "uuid"
 }
@@ -271,14 +247,14 @@ Authorization: Bearer {token}
 或
 ```json
 {
-  "error": "Access denied",
-  "status": 403,
+  "error": "Document not found",
+  "status": 400,
   "timestamp": 1713039600000,
   "traceId": "uuid"
 }
 ```
 
-### 2.5 下载文档
+### 2.4 下载文档
 
 **请求方法**：GET
 **请求路径**：`/api/documents/{id}/download`
@@ -293,7 +269,7 @@ Authorization: Bearer {token}
 - HTTP 401 Unauthorized（用户不存在）
 - HTTP 400 Bad Request（其他错误）
 
-### 2.6 删除文档
+### 2.5 删除文档
 
 **请求方法**：DELETE
 **请求路径**：`/api/documents/{id}`
@@ -325,22 +301,13 @@ Authorization: Bearer {token}
 ```json
 {
   "error": "Document not found",
-  "status": 404,
-  "timestamp": 1713039600000,
-  "traceId": "uuid"
-}
-```
-或
-```json
-{
-  "error": "Access denied",
-  "status": 403,
+  "status": 400,
   "timestamp": 1713039600000,
   "traceId": "uuid"
 }
 ```
 
-### 2.7 更新文档
+### 2.6 更新文档
 
 **请求方法**：PUT
 **请求路径**：`/api/documents/{id}`
@@ -392,16 +359,7 @@ Authorization: Bearer {token}
 ```json
 {
   "error": "Document not found",
-  "status": 404,
-  "timestamp": 1713039600000,
-  "traceId": "uuid"
-}
-```
-或
-```json
-{
-  "error": "Access denied",
-  "status": 403,
+  "status": 400,
   "timestamp": 1713039600000,
   "traceId": "uuid"
 }
@@ -443,4 +401,3 @@ Authorization: Bearer {token}
 - **上传即处理**：文件上传后会立即自动转换为Markdown
 - 转换后的Markdown内容存储在文档实体的`mdContent`字段中
 - 转换状态通过`converted`字段表示（true表示已转换，false表示未转换）
-- 转换接口（`/api/documents/{id}/convert`）保留用于兼容性，实际无需单独调用
