@@ -1,7 +1,9 @@
 package com.docplatform.master.security;
 
 import com.docplatform.master.util.JwtUtil;
+import com.docplatform.master.util.ResponseUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -47,5 +49,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.addHeader("Authorization", "Bearer " + token);
         response.setContentType("application/json");
         response.getWriter().write(new ObjectMapper().writeValueAsString(Map.of("accessToken", token, "username", username)));
+    }
+    
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+        ResponseUtil.error(response, "Invalid username or password", HttpStatus.UNAUTHORIZED);
     }
 }
