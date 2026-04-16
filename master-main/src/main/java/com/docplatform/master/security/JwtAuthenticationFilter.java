@@ -37,7 +37,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password);
             return authenticationManager.authenticate(authToken);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            try {
+                ResponseUtil.error(response, "Invalid JSON format: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            return null;
         }
     }
     
@@ -53,6 +58,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-        ResponseUtil.error(response, "Invalid username or password", HttpStatus.UNAUTHORIZED);
+        if (!response.isCommitted()) {
+            ResponseUtil.error(response, "Invalid username or password", HttpStatus.UNAUTHORIZED);
+        }
     }
 }
