@@ -52,21 +52,6 @@ public class DocumentController {
         }
     }
     
-    @PostMapping("/{id}/convert")
-    public ResponseEntity<?> convertDocument(@PathVariable Long id, Authentication authentication) {
-        try {
-            User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found"));
-            Document document = documentService.convertDocument(id, user);
-            return ResponseUtil.success(document);
-        } catch (IOException e) {
-            return ResponseUtil.error("Failed to convert document", HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (UserNotFoundException e) {
-            return ResponseUtil.error(e.getMessage(), HttpStatus.UNAUTHORIZED);
-        } catch (RuntimeException e) {
-            return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
-    
     @GetMapping
     public ResponseEntity<?> getDocuments(Authentication authentication, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         try {
