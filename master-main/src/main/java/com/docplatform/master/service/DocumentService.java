@@ -54,62 +54,72 @@ public class DocumentService {
         
         // 检查是否存在同名文件
         Document existingDocument = documentRepository.findByUserAndOriginalName(user, originalFilename);
-        Document savedDocument;
+        Document document;
+        String oldFilePath = null;
         
         if (existingDocument != null) {
             // 存在同名文件，执行更新操作
             // 保存旧文件路径，用于后续删除
-            String oldFilePath = existingDocument.getFilePath();
+            oldFilePath = existingDocument.getFilePath();
             
             // 更新文档信息
             existingDocument.setTitle(originalFilename != null ? originalFilename.substring(0, originalFilename.lastIndexOf('.')) : "");
             existingDocument.setFilePath(filePath.toString());
             existingDocument.setFileSize(file.getSize());
             existingDocument.setFileType(file.getContentType());
+            existingDocument.setConverted(false);
+            existingDocument.setMdContent(null);
             
-            // 特殊处理 Markdown 文件
-            if ("text/markdown".equals(file.getContentType())) {
-                // 直接读取文件内容作为 mdContent
-                String markdownContent = new String(Files.readAllBytes(filePath));
-                existingDocument.setMdContent(markdownContent);
-                existingDocument.setConverted(true);
-            } else {
-                existingDocument.setConverted(false);
-                existingDocument.setMdContent(null);
-            }
-            
-            savedDocument = documentRepository.save(existingDocument);
-            
-            // 清理旧文件
-            try {
-                Files.deleteIfExists(Paths.get(oldFilePath));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            document = existingDocument;
         } else {
             // 不存在同名文件，执行新增操作
-            Document document = new Document();
+            document = new Document();
             document.setTitle(originalFilename != null ? originalFilename.substring(0, originalFilename.lastIndexOf('.')) : "");
             document.setOriginalName(originalFilename);
             document.setFilePath(filePath.toString());
             document.setFileSize(file.getSize());
             document.setFileType(file.getContentType());
             document.setUser(user);
-            
-            // 特殊处理 Markdown 文件
-            if ("text/markdown".equals(file.getContentType())) {
-                // 直接读取文件内容作为 mdContent
-                String markdownContent = new String(Files.readAllBytes(filePath));
-                document.setMdContent(markdownContent);
-                document.setConverted(true);
-            } else {
-                document.setConverted(false);
+            document.setConverted(false);
+        }
+        
+        // 上传即处理：立即转换为 Markdown
+        String markdownContent = convertToMarkdown(filePath.toFile(), file.getContentType());
+        document.setMdContent(markdownContent);
+        document.setConverted(true);
+        
+        // 保存文档
+        Document savedDocument = documentRepository.save(document);
+        
+        // 清理旧文件（如果是更新操作）
+        if (oldFilePath != null) {
+            try {
+                Files.deleteIfExists(Paths.get(oldFilePath));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            
-            savedDocument = documentRepository.save(document);
         }
         
         return savedDocument;
+    }
+    
+    /**
+     * 将文件转换为 Markdown 内容
+     */
+    private String convertToMarkdown(File file, String fileType) throws IOException {
+        // 特殊处理 Markdown 文件
+        if ("text/markdown".equals(fileType)) {
+            return new String(Files.readAllBytes(file.toPath()));
+        }
+        
+        // 获取适当的转换器
+        DocumentConverter converter = ConverterFactory.getConverter(fileType);
+        if (converter == null) {
+            throw new RuntimeException("不支持的文件类型: " + fileType);
+        }
+        
+        // 转换为 Markdown
+        return converter.convertToMarkdown(file);
     }
     
     public Document convertDocument(Long id, User user) throws IOException {
