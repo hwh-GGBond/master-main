@@ -1,6 +1,7 @@
 package com.docplatform.master.security;
 
 import com.docplatform.master.util.JwtUtil;
+import com.docplatform.master.util.ResponseUtil;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,15 +34,25 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         }
         
         String token = header.replace("Bearer ", "");
-        String username = jwtUtil.extractUsername(token);
-        
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtUtil.validateToken(token, username)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    username, null, Collections.emptyList()
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+        try {
+            String username = jwtUtil.extractUsername(token);
+            
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (jwtUtil.validateToken(token, username)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        username, null, Collections.emptyList()
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    // Token 无效或过期
+                    ResponseUtil.error(response, "Unauthorized: Token expired or invalid", HttpStatus.UNAUTHORIZED);
+                    return;
+                }
             }
+        } catch (Exception e) {
+            // 解析 token 失败
+            ResponseUtil.error(response, "Unauthorized: Invalid token", HttpStatus.UNAUTHORIZED);
+            return;
         }
         
         chain.doFilter(request, response);
