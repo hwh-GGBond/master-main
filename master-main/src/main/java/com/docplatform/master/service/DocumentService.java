@@ -4,6 +4,7 @@ import com.docplatform.master.entity.Document;
 import com.docplatform.master.entity.User;
 import com.docplatform.master.exception.AccessDeniedException;
 import com.docplatform.master.exception.DocumentNotFoundException;
+import com.docplatform.master.exception.InvalidPageParamsException;
 import com.docplatform.master.exception.PageOutOfRangeException;
 import com.docplatform.master.repository.DocumentRepository;
 import com.docplatform.master.service.converter.ConverterFactory;
@@ -150,6 +151,11 @@ public class DocumentService {
     }
     
     public Map<String, Object> getDocumentsByUser(User user, int page, int size) {
+        // 校验分页参数
+        if (page < 0 || size <= 0 || size > 1000) {
+            throw new InvalidPageParamsException("分页参数不合法");
+        }
+        
         List<Document> documents = documentRepository.findByUser(user);
         
         // 计算总记录数
