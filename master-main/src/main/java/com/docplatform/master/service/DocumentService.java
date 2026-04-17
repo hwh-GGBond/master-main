@@ -50,7 +50,7 @@ public class DocumentService {
         
         // Save file to disk
         Path filePath = Paths.get(uploadDir, uniqueFilename);
-        Files.write(filePath, file.getBytes());
+        Files.write(filePath, file.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         
         // 检查是否存在同名文件
         Document existingDocument = documentRepository.findByUserAndOriginalName(user, originalFilename);
@@ -112,7 +112,7 @@ public class DocumentService {
     private String convertToMarkdown(File file, String fileType) throws IOException {
         // 特殊处理 Markdown 文件
         if ("text/markdown".equals(fileType)) {
-            return new String(Files.readAllBytes(file.toPath()));
+            return new String(Files.readAllBytes(file.toPath()), java.nio.charset.StandardCharsets.UTF_8);
         }
         
         // 获取适当的转换器
@@ -139,7 +139,7 @@ public class DocumentService {
         if ("text/markdown".equals(document.getFileType())) {
             // 直接读取文件内容作为 mdContent
             File file = new File(document.getFilePath());
-            markdownContent = new String(Files.readAllBytes(file.toPath()));
+            markdownContent = new String(Files.readAllBytes(file.toPath()), java.nio.charset.StandardCharsets.UTF_8);
         } else {
             // Get appropriate converter
             DocumentConverter converter = ConverterFactory.getConverter(document.getFileType());
