@@ -87,6 +87,9 @@ public class DocumentService {
         String markdownContent = convertToMarkdown(filePath.toFile(), file.getContentType());
         document.setMdContent(markdownContent);
         document.setConverted(true);
+        if (!"text/markdown".equals(file.getContentType())) {
+            document.setFileType("text/markdown");
+        }
         
         // 保存文档
         Document savedDocument = documentRepository.save(document);
@@ -152,7 +155,10 @@ public class DocumentService {
         // Update document
         document.setMdContent(markdownContent);
         document.setConverted(true);
-        
+        if (!"text/markdown".equals(document.getFileType())) {
+            document.setFileType("text/markdown");
+        }
+
         return documentRepository.save(document);
     }
     
