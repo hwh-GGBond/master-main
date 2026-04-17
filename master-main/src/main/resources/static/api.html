@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云墨笔记 API 接口文档</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .endpoint {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+        }
+        .method {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+        .get { background-color: #5cb85c; color: white; }
+        .post { background-color: #3498db; color: white; }
+        .put { background-color: #f39c12; color: white; }
+        .delete { background-color: #e74c3c; color: white; }
+        .path {
+            font-family: monospace;
+            font-size: 14px;
+            color: #34495e;
+        }
+        .params {
+            margin: 10px 0;
+            padding: 10px;
+            background: #ecf0f1;
+            border-radius: 4px;
+        }
+        .response {
+            margin: 10px 0;
+            padding: 10px;
+            background: #ecf0f1;
+            border-radius: 4px;
+        }
+        .code {
+            font-family: monospace;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>云墨笔记 API 接口文档</h1>
+    
+    <h2>基础信息</h2>
+    <ul>
+        <li><strong>基础URL:</strong> <code>http://localhost:8080/api</code></li>
+        <li><strong>认证方式:</strong> JWT Token（请求头 <code>Authorization: Bearer {token}</code>）</li>
+    </ul>
+    
+    <h2>认证接口</h2>
+    
+    <div class="endpoint">
+        <span class="method post">POST</span>
+        <span class="path">/auth/register</span>
+        <h3>注册</h3>
+        <div class="params">
+            <strong>请求体 (JSON):</strong>
+            <div class="code">
+{
+  "username": "用户名",
+  "password": "密码"
+}
+            </div>
+        </div>
+        <div class="response">
+            <strong>响应:</strong>
+            <div class="code">
+// 成功
+{
+  "accessToken": "JWT token",
+  "username": "用户名"
+}
+
+// 失败
+{
+  "error": "错误信息"
+}
+            </div>
+        </div>
+    </div>
+    
+    <div class="endpoint">
+        <span class="method post">POST</span>
+        <span class="path">/auth/login</span>
+        <h3>登录</h3>
+        <div class="params">
+            <strong>请求体 (JSON):</strong>
+            <div class="code">
+{
+  "username": "用户名",
+  "password": "密码"
+}
+            </div>
+        </div>
+        <div class="response">
+            <strong>响应:</strong>
+            <div class="code">
+// 成功
+{
+  "accessToken": "JWT token",
+  "username": "用户名"
+}
+
+// 失败
+{
+  "error": "Bad credentials"
+}
+            </div>
+        </div>
+    </div>
+    
+    <div class="endpoint">
+        <span class="method get">GET</span>
+        <span class="path">/auth/token/validate</span>
+        <h3>验证token并查询有效期</h3>
+        <div class="params">
+            <strong>请求头:</strong>
+            <ul>
+                <li><code>Authorization: Bearer {token}</code></li>
+            </ul>
+        </div>
+        <div class="response">
+            <strong>响应:</strong>
+            <div class="code">
+// 成功
+{
+  "username": "用户名",
+  "tokenExpiration": "24 hours",
+  "status": "valid"
+}
+
+// 失败
+{
+  "error": "Invalid token"
+}
+            </div>
+        </div>
+    </div>
+    
+    <h2>文档相关接口</h2>
+    
+    <div class="endpoint">
+        <span class="method post">POST</span>
+        <span class="path">/documents/upload</span>
+        <h3>上传文档</h3>
+        <div class="params">
+            <strong>参数:</strong>
+            <ul>
+                <li><code>file</code> (MultipartFile): 要上传的文件</li>
+            </ul>
+        </div>
+        <div class="response">
+            <strong>响应:</strong>
+            <div class="code">
+// 成功
+{
+  "data": {
+    "id": 1,
+    "title": "文档标题",
+    "originalName": "原始文件名",
+    "filePath": "文件路径",
+    "fileType": "文件类型",
+    "fileSize": 1024,
+    "converted": true,
+    "mdContent": "Markdown内容",
+    "createdAt": "2024-01-01T00:00:00",
+    "updatedAt": "2024-01-01T00:00:00"
+  },
+  "status": 201,
+  "timestamp": "2024-01-01T00:00:00",
+  "traceId": "xxxx"
+}
+
+// 失败
+{
+  "error": "错误信息",
+  "status": 400,
+  "timestamp": "2024-01-01T00:00:00",
+  "traceId": "xxxx"
+}
+            </div>
+        </div>
+    </div>
+    
+    <div class="endpoint">
+        <span class="method get">GET</span>
+        <span class="path">/documents</span>
+        <h3>获取文档列表</h3>
+        <div class="params">
+            <strong>参数:</strong> 无
+        </div>
+        <div class="response">
+            <strong>响应:</strong>
+            <div class="code">
+// 成功
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "文档标题",
+      "originalName": "原始文件名",
+      "filePath": "文件路径",
+      "fileType": "文件类型",
+      "fileSize": 1024,
+      "converted": true,
+      "mdContent": "Markdown内容",
+      "createdAt": "2024-01-01T00:00:00",
+      "updatedAt": "2024-01-01T00:00:00"
+    }
+  ],
+  "status": 200,
+  "timestamp": "2024-01-01T00:00:00",
+  "traceId": "xxxx"
+}
+
+// 失败
+{
+  "error": "错误信息",
+  "status": 400,
+  "timestamp": "2024-01-01T00:00:00",
+  "traceId": "xxxx"
+}
+            </div>
+        </div>
+    </div>
+    
+    <div class="endpoint">
+        <span class="method get">GET</span>
+        <span class="path">/documents/{id}</span>
+        <h3>获取文档详情</h3>
+        <div class="params">
+            <strong>参数:</strong>
+            <ul>
+                <li><code>id</code> (路径参数): 文档ID</li>
+            </ul>
+        </div>
+        <div class="response">
+            <strong>响应:</strong>
+            <div class="code">
+// 成功
+{
+  "data": {
+    "id": 1,
+    "title": "文档标题",
+    "originalName": "原始文件名",
+    "filePath": "文件路径",
+    "fileType": "文件类型",
+    "fileSize": 1024,
+    "converted": true,
+    "mdContent": "Markdown内容",
+    "createdAt": "2024-01-01T00:00:00",
+    "updatedAt": "2024-01-01T00:00:00"
+  },
+  "status": 200,
+  "timestamp": "2024-01-01T00:00:00",
+  "traceId": "xxxx"
+}
+
+// 失败
+{
+  "error": "错误信息",
+  "status": 400,
+  "timestamp": "2024-01-01T00:00:00",
+  "traceId": "xxxx"
+}
+            </div>
+        </div>
+    </div>
+    
+    <div class="endpoint">
+        <span class="method get">GET</span>
+        <span class="path">/documents/{id}/download</span>
+        <h3>下载文档</h3>
+        <div class="params">
+            <strong>参数:</strong>
+            <ul>
+                <li><code>id</code> (路径参数): 文档ID</li>
+            </ul>
+        </div>
+        <div class="response">
+            <strong>响应:</strong>
+            <ul>
+                <li>成功: 文件流（Content-Disposition 头包含编码后的文件名）</li>
+                <li>失败: HTTP 状态码 + 错误信息</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="endpoint">
+        <span class="method delete">DELETE</span>
+        <span class="path">/documents/{id}</span>
+        <h3>删除文档</h3>
+        <div class="params">
+            <strong>参数:</strong>
+            <ul>
+                <li><code>id</code> (路径参数): 文档ID</li>
+            </ul>
+        </div>
+        <div class="response">
+            <strong>响应:</strong>
+            <div class="code">
+// 成功
+{
+  "data": {
+    "message": "Document deleted successfully"
+  },
+  "status": 200,
+  "timestamp": "2024-01-01T00:00:00",
+  "traceId": "xxxx"
+}
+
+// 失败
+{
+  "error": "错误信息",
+  "status": 400,
+  "timestamp": "2024-01-01T00:00:00",
+  "traceId": "xxxx"
+}
+            </div>
+        </div>
+    </div>
+    
+    <div class="endpoint">
+        <span class="method put">PUT</span>
+        <span class="path">/documents/{id}</span>
+        <h3>更新文档</h3>
+        <div class="params">
+            <strong>参数:</strong>
+            <ul>
+                <li><code>id</code> (路径参数): 文档ID</li>
+                <li>请求体 (JSON):
+                    <div class="code">
+{
+  "title": "文档标题",
+  "mdContent": "Markdown内容"
+}
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="response">
+            <strong>响应:</strong>
+            <div class="code">
+// 成功
+{
+  "data": {
+    "id": 1,
+    "title": "更新后的标题",
+    "originalName": "原始文件名",
+    "filePath": "文件路径",
+    "fileType": "文件类型",
+    "fileSize": 1024,
+    "converted": true,
+    "mdContent": "更新后的Markdown内容",
+    "createdAt": "2024-01-01T00:00:00",
+    "updatedAt": "2024-01-01T00:00:00"
+  },
+  "status": 200,
+  "timestamp": "2024-01-01T00:00:00",
+  "traceId": "xxxx"
+}
+
+// 失败
+{
+  "error": "错误信息",
+  "status": 400,
+  "timestamp": "2024-01-01T00:00:00",
+  "traceId": "xxxx"
+}
+            </div>
+        </div>
+    </div>
+    
+    <h2>统一错误响应格式</h2>
+    <div class="code">
+{
+  "error": "错误信息",
+  "status": 400,
+  "timestamp": "2024-01-01T00:00:00",
+  "traceId": "xxxx"
+}
+    </div>
+    
+    <h2>统一成功响应格式</h2>
+    <div class="code">
+{
+  "data": "响应数据",
+  "status": 200,
+  "timestamp": "2024-01-01T00:00:00",
+  "traceId": "xxxx"
+}
+    </div>
+</body>
+</html>
