@@ -3,11 +3,12 @@ package com.docplatform.master.service.converter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 
 public class CodeConverter implements DocumentConverter {
     @Override
     public String convertToMarkdown(File file) throws IOException {
-        String content = new String(Files.readAllBytes(file.toPath()));
+        String content = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
         
         // 获取文件扩展名作为代码语言
         String fileName = file.getName();
