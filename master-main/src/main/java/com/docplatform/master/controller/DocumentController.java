@@ -10,6 +10,7 @@ import com.docplatform.master.service.UserService;
 import com.docplatform.master.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,10 +20,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,11 +101,26 @@ public class DocumentController {
             User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found"));
             Document document = documentService.getDocumentById(id, user);
             
-            Resource resource = new FileSystemResource(document.getFilePath());
+            Resource resource;
             String fileType = document.getFileType();
             if (fileType.startsWith("text/") || fileType.equals("application/json") || fileType.equals("application/javascript")) {
                 fileType = fileType + "; charset=UTF-8";
             }
+            
+            // 如果文档已转换为 Markdown，返回转换后的内容
+            if (document.isConverted() && document.getMdContent() != null) {
+                byte[] content = document.getMdContent().getBytes(StandardCharsets.UTF_8);
+                resource = new InputStreamResource(new ByteArrayInputStream(content)) {
+                    @Override
+                    public String getFilename() {
+                        return document.getOriginalName();
+                    }
+                };
+            } else {
+                // 否则返回原始文件
+                resource = new FileSystemResource(document.getFilePath());
+            }
+            
             String encodedFilename = URLEncoder.encode(document.getOriginalName(), StandardCharsets.UTF_8);
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(fileType))
