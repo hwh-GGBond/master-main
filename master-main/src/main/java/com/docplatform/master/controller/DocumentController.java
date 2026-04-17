@@ -10,7 +10,7 @@ import com.docplatform.master.service.UserService;
 import com.docplatform.master.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -107,24 +107,29 @@ public class DocumentController {
                 fileType = fileType + "; charset=UTF-8";
             }
             
+            String encodedFilename = URLEncoder.encode(document.getOriginalName(), StandardCharsets.UTF_8);
+            
             // 如果文档已转换为 Markdown，返回转换后的内容
             if (document.isConverted() && document.getMdContent() != null) {
                 byte[] content = document.getMdContent().getBytes(StandardCharsets.UTF_8);
-                resource = new InputStreamResource(new ByteArrayInputStream(content)) {
+                resource = new ByteArrayResource(content) {
                     @Override
                     public String getFilename() {
-                        return document.getOriginalName();
+                        return encodedFilename;
                     }
                 };
             } else {
                 // 否则返回原始文件
-                resource = new FileSystemResource(document.getFilePath());
+                resource = new FileSystemResource(document.getFilePath()) {
+                    @Override
+                    public String getFilename() {
+                        return encodedFilename;
+                    }
+                };
             }
-            
-            String encodedFilename = URLEncoder.encode(document.getOriginalName(), StandardCharsets.UTF_8);
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(fileType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + encodedFilename)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
                     .body(resource);
         } catch (UserNotFoundException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
