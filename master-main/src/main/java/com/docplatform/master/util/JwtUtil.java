@@ -17,8 +17,8 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    // 直接写死一个足够长的安全密钥（长度 ≥32 位）
-    private String secret = "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFG";
+    @Value("${jwt.secret}")
+    private String secret;
 
     @Value("${jwt.expiration}")
     private long expiration;
