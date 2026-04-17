@@ -57,18 +57,31 @@ public class DocumentController {
         }
     }
     
+    // @GetMapping
+    // public ResponseEntity<?> getDocuments(Authentication authentication, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    //     try {
+    //         User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found"));
+    //         Map<String, Object> result = documentService.getDocumentsByUser(user, page, size);
+    //         return ResponseUtil.success(result);
+    //     } catch (UserNotFoundException e) {
+    //         return ResponseUtil.error(e.getMessage(), HttpStatus.UNAUTHORIZED);
+    //     } catch (PageOutOfRangeException e) {
+    //         return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+    //     } catch (InvalidPageParamsException e) {
+    //         return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+    //     } catch (RuntimeException e) {
+    //         return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
+    //     }
+    // }
+
     @GetMapping
-    public ResponseEntity<?> getDocuments(Authentication authentication, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<?> getDocuments(Authentication authentication) {
         try {
             User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found"));
-            Map<String, Object> result = documentService.getDocumentsByUser(user, page, size);
-            return ResponseUtil.success(result);
+            List<Document> documents = documentService.getDocumentsByUser(user);
+            return ResponseUtil.success(documents);
         } catch (UserNotFoundException e) {
             return ResponseUtil.error(e.getMessage(), HttpStatus.UNAUTHORIZED);
-        } catch (PageOutOfRangeException e) {
-            return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (InvalidPageParamsException e) {
-            return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (RuntimeException e) {
             return ResponseUtil.error(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
