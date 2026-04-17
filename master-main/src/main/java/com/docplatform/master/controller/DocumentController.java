@@ -97,8 +97,12 @@ public class DocumentController {
             Document document = documentService.getDocumentById(id, user);
             
             Resource resource = new FileSystemResource(document.getFilePath());
+            String fileType = document.getFileType();
+            if (fileType.startsWith("text/") || fileType.equals("application/json") || fileType.equals("application/javascript")) {
+                fileType = fileType + "; charset=UTF-8";
+            }
             return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(document.getFileType()))
+                    .contentType(MediaType.parseMediaType(fileType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + document.getOriginalName())
                     .body(resource);
         } catch (UserNotFoundException e) {
