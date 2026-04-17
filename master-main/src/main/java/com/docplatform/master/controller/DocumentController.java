@@ -19,6 +19,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -101,9 +104,10 @@ public class DocumentController {
             if (fileType.startsWith("text/") || fileType.equals("application/json") || fileType.equals("application/javascript")) {
                 fileType = fileType + "; charset=UTF-8";
             }
+            String encodedFilename = URLEncoder.encode(document.getOriginalName(), StandardCharsets.UTF_8);
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(fileType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + document.getOriginalName())
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + encodedFilename)
                     .body(resource);
         } catch (UserNotFoundException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
